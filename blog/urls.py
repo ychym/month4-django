@@ -16,12 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from posts.views import hello_world, my_name, say_name, post_list
+from django.conf.urls.static import static
+from posts.views import hello_world, my_name, say_name, post_list, post_detail
+from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("hello/", hello_world),
     path("name/", my_name),
     path("name/<str:name>", say_name),
-    path("", post_list)
+    path("", post_list, name="post_list"),
+    path("post/<int:pk>/", post_detail, name="post_detail"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http.response import HttpResponse
 from posts.models import Post
 # Create your views here.
@@ -14,7 +14,13 @@ def my_name(r):
 def say_name(r, name):
     return HttpResponse(f"<h2>Hello,</h2><h1>{name}</h1>")
 
-def post_list(r):
+def post_list(r):#r-request
     posts = Post.objects.filter(is_published=True)
 
-    return render(r, "list_posts.html", {"posts":posts})
+    return render(r, "posts/list_posts.html", {"posts":posts})
+
+def post_detail(r, pk):
+    post = get_object_or_404(Post, id=pk)
+    #post = Post.objects.get()
+    return render(r, "posts/post_detail.html", {"post": post})
+

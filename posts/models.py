@@ -2,16 +2,25 @@ from django.db import models
 
 # Create your models here.
 
+class Category(models.Model):
+    name = models.CharField()
+
+class Tag(models.Model):
+    name = models.CharField()
+
 class Post(models.Model):
     title = models.CharField(max_length=255)
     text = models.CharField()
     is_published = models.BooleanField(default=False)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    tags = models.ManyToManyField(Tag)
+    image = models.ImageField(null=True, upload_to="posts")#upload_to="posts" -medianyn ichinde posts foulder tuzot
 
 
 
 
 
-# #CRUD - C
+# #CRUD - C -->django do koldo tuzunun keregi jok django ozu automatically kylat
 
 # #Create
 # #INSERT INTO table_name (title, text) VALUES (?, ?);

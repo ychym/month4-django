@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Кнопка "Назад" -->
+            <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm mb-4">
+                &larr; Назад
+            </a>
+
+            <article class="blog-post">
+                <!-- Категория и Дата (если есть) -->
+                {% if post.category %}
+                    <div class="mb-2">
+                        <span class="badge bg-primary fs-6">{{ post.category.name }}</span>
+                    </div>
+                {% endif %}
+
+                <!-- Заголовок поста -->
+                <h1 class="display-4 fw-bold mb-3">{{ post.title }}</h1>
+
+                <!-- Автор поста -->
+                <div class="text-muted mb-4 d-flex align-items-center">
+                    <span>Автор: <strong>{{ post.name }}</strong></span>
+                </div>
+
+                <!-- Главное изображение -->
+                {% if post.image %}
+                    <div class="mb-4 text-center">
+                        <img src="{{ post.image.url }}" class="img-fluid rounded shadow-sm w-100" alt="{{ post.title }}" style="max-height: 450px; object-fit: cover;">
+                    </div>
+                {% else %}
+                        <div class="mb-4 text-center">
+                        <img src="{% static 'default.png' %}" class="img-fluid rounded shadow-sm w-100" alt="{{ post.title }}" style="max-height: 450px; object-fit: cover;">
+                    </div>
+                {% endif %}
+
+                <!-- Полный текст поста -->
+                <div class="post-text fs-5 mb-5 align-justify" style="line-height: 1.8;">
+                    {{ post.text|linebreaks }}
+                </div>
+
+                <!-- Блок с тегами (post.tags.all) -->
+                {% if post.tags.all %}
+                    <div class="border-top pt-4 mt-5">
+                        <h6 class="text-uppercase text-muted mb-3">Теги:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for tag in post.tags.all %}
+                                <a href="#" class="badge bg-secondary text-decoration-none p-2">
+                                    {{ tag.name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </article>
+        </div>
+    </div>
+</div>
+{% endblock %}
