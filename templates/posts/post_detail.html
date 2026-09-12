@@ -31,7 +31,7 @@
                         <img src="{{ post.image.url }}" class="img-fluid rounded shadow-sm w-100" alt="{{ post.title }}" style="max-height: 450px; object-fit: cover;">
                     </div>
                 {% else %}
-                        <div class="mb-4 text-center">
+                    <div class="mb-4 text-center">
                         <img src="{% static 'default.png' %}" class="img-fluid rounded shadow-sm w-100" alt="{{ post.title }}" style="max-height: 450px; object-fit: cover;">
                     </div>
                 {% endif %}
@@ -55,7 +55,53 @@
                     </div>
                 {% endif %}
             </article>
+
+            <section class="mt-5 pt-4 border-top">
+                <h3 class="mb-4">Комментарийлер ({{ post.comment_set.count }})</h3>
+
+                <!-- 2. Жазылган комментарийлердин тизмеси -->
+                <div class="comments-list">
+                    {% for comment in post.comment_set.all %}
+                        <div class="card mb-3 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="fw-bold mb-0">{{ comment.author_name }}</h6>
+                                    <small class="text-muted">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                                </div>
+                                <p class="card-text mb-0">{{ comment.text|linebreaksbr }}</p>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="alert alert-light text-center border" role="alert">
+                            Азырынча комментарийлер жок. Биринчи болуп пикир калтырыңыз!
+                        </div>
+                    {% endfor %}
+
+                <!-- 1. Комментарий кошуу формасы -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Комментарий калтыруу</h5>
+                        <form action="{% url 'post_comment' post.pk %}" method="POST">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="author_name" class="form-label">Сиздин атыңыз:</label>
+                                <input type="text" name="author_name" id="author_name" class="form-control" placeholder="Атыңызды жазыңыз" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="text" class="form-label">Комментарий:</label>
+                                <textarea name="text" id="text" rows="3" class="form-control" placeholder="Пикириңизди жазыңыз..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Жөнөтүү</button>
+                        </form>
+                    </div>
+                </div>
+
+                </div>
+            </section>
+
         </div>
     </div>
 </div>
 {% endblock %}
+
+
