@@ -49,4 +49,4 @@ def post_comment(request: HttpRequest, pk) -> HttpResponse:
             comment.post = post
             comment.save()
             return redirect("post_detail", pk=pk)
-    return render(request, "post_detail.html", pk=pk)
+    return render(request, "post_detail.html", {"post":post})
