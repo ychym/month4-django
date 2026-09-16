@@ -3,6 +3,7 @@ from django.http.response import HttpResponse
 from django.http.request import HttpRequest
 from posts.models import Post,Tag, Category
 from posts.forms import PostForm, CommentForm
+from django.db.models import Q
 # Create your views here.
 
 def hello_world(r):
@@ -16,16 +17,30 @@ def my_name(r):
 def say_name(r, name):
     return HttpResponse(f"<h2>Hello,</h2><h1>{name}</h1>")
 
-def post_list(r):#r-request
+
+
+
+def post_list(request: HttpRequest):#r-request
+    #posts = Post.objects.all() #bardyk posttordu chygarat
+    qp = request.GET
     posts = Post.objects.filter(is_published=True)
 
-    return render(r, "posts/list_posts.html", {"posts":posts})
+    if search := qp.get("search"):
+        title = Q(title__icontains=search)#icontains — чоң же кичине тамгасына карабай издөө
+        text = Q(text__icontains=search)
+        posts = posts.filter(title | text)
+    
+    return render(request, "posts/list_posts.html", {"posts":posts})
+
+
 
 def post_detail(r, pk):
     post = get_object_or_404(Post, id=pk)#post = Post.objects.get() bul jakta http 500 kaitarat
     post.views += 1
     post.save()
     return render(r, "posts/post_detail.html", {"post": post})
+
+
 
 def create_post(request: HttpRequest) -> HttpResponse:#type hinting
     form = PostForm()
@@ -39,6 +54,8 @@ def create_post(request: HttpRequest) -> HttpResponse:#type hinting
     categories = Category.objects.all()
     return render(request, "posts/create_post.html", {"form": form, "tags": tags, "categories": categories})
 
+
+
 def post_comment(request: HttpRequest, pk: int) -> HttpResponse:
     if request.method.lower() == "post":
         post = get_object_or_404(Post, pk=pk)
@@ -50,6 +67,8 @@ def post_comment(request: HttpRequest, pk: int) -> HttpResponse:
             comment.save()
             return redirect("post_detail", pk=pk)
     return render(request, "post_detail.html", {"post":post})
+
+
 
 def delete_post(request: HttpRequest, pk:int) -> HttpResponse:
     post = get_object_or_404(Post, pk=pk)
