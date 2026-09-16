@@ -3,6 +3,9 @@
 
 {% block content %}
 <div class="container my-4">
+                <a href="{% url 'create_post' %}" class="btn btn-outline-secondary btn-sm mb-4">
+                 Create post
+            </a>
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for post in posts %}
         <div class="col">

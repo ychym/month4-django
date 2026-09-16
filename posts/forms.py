@@ -22,3 +22,5 @@ class CommentForm(forms.ModelForm):
         fields = ("author_name", "text")
 
     
+
+    

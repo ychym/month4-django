@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls.static import static
-from posts.views import hello_world, my_name, say_name, post_list, post_detail, create_post, post_comment
+from posts.views import hello_world, my_name, say_name, post_list, post_detail, create_post, post_comment, delete_post
 from django.conf import settings
 
 urlpatterns = [
@@ -29,6 +29,7 @@ urlpatterns = [
     path("post/<int:pk>/", post_detail, name="post_detail"),
     path("post/create/", create_post, name="create_post"),
     path("post/<int:pk>/comment/", post_comment, name="post_comment"),
+    path("post/<int:pk>/delete", delete_post, name="delete_post"),
 ]
 
 if settings.DEBUG:

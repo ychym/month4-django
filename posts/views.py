@@ -39,7 +39,7 @@ def create_post(request: HttpRequest) -> HttpResponse:#type hinting
     categories = Category.objects.all()
     return render(request, "posts/create_post.html", {"form": form, "tags": tags, "categories": categories})
 
-def post_comment(request: HttpRequest, pk) -> HttpResponse:
+def post_comment(request: HttpRequest, pk: int) -> HttpResponse:
     if request.method.lower() == "post":
         post = get_object_or_404(Post, pk=pk)
         form = CommentForm(request.POST)
@@ -50,3 +50,14 @@ def post_comment(request: HttpRequest, pk) -> HttpResponse:
             comment.save()
             return redirect("post_detail", pk=pk)
     return render(request, "post_detail.html", {"post":post})
+
+def delete_post(request: HttpRequest, pk:int) -> HttpResponse:
+    post = get_object_or_404(Post, pk=pk)
+
+    if request.method.lower() == "post":
+        post.delete()
+        print("Post deleted!")
+        return redirect("post_list")
+        
+
+    return render(request, "posts/post_delete.html", context={"post": post})
