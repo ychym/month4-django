@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.models import User
 # Create your models here.
 
 class Category(models.Model):
@@ -22,6 +22,7 @@ class Post(models.Model):
     tags = models.ManyToManyField(Tag)
     image = models.ImageField(null=True, upload_to="posts")#upload_to="posts" -medianyn ichinde posts foulder tuzot
     views = models.IntegerField(default=0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
 
 class Comment(models.Model):
     author_name = models.CharField(max_length=100)

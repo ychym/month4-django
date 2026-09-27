@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http.response import HttpResponse
-from django.http.request import HttpRequest
+from django.http.request import HttpRequest  
+from django.contrib.auth.decorators import login_required
 from posts.models import Post,Tag, Category
 from posts.forms import PostForm, CommentForm
 from django.db.models import Q
@@ -19,7 +20,6 @@ def say_name(r, name):
 
 
 
-
 def post_list(request: HttpRequest):#r-request
     #posts = Post.objects.all() #bardyk posttordu chygarat
     qp = request.GET
@@ -29,6 +29,8 @@ def post_list(request: HttpRequest):#r-request
         title = Q(title__icontains=search)#icontains — чоң же кичине тамгасына карабай издөө
         text = Q(text__icontains=search)
         posts = posts.filter(title | text)
+
+    posts = posts[0:5] #pagination
     
     return render(request, "posts/list_posts.html", {"posts":posts})
 
@@ -41,13 +43,14 @@ def post_detail(r, pk):
     return render(r, "posts/post_detail.html", {"post": post})
 
 
-
+@login_required
 def create_post(request: HttpRequest) -> HttpResponse:#type hinting
     form = PostForm()
     if request.method.lower() == "post":
      print(request.POST)
      form = PostForm(request.POST, request.FILES)
      if form.is_valid():
+            form.instance.user = request.user# b.a. form.instance.user=Post.user
             form.save()
             return redirect("post_detail", pk=form.instance.pk)
     tags = Tag.objects.all()
@@ -80,3 +83,4 @@ def delete_post(request: HttpRequest, pk:int) -> HttpResponse:
         
 
     return render(request, "posts/post_delete.html", context={"post": post})
+

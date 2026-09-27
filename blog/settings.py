@@ -119,6 +119,9 @@ STATIC_URL = 'static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+LOGIN_REDIRECT_URL = "post_list" #login bolgondon kiyin kayda jonotuu
+LOGOUT_REDIRECT_URL = "post_list"#logout bolgondon kiyin kaida jonotuu
+LOGIN_URL = "login"#login bolo albagandardy kaida jonotuu
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
