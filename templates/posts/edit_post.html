@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <!-- Баскычтар блогу (Назад к посту) -->
+            <div class="d-flex gap-2 mb-4">
+                <a href="{% url 'post_detail' post.id %}" class="btn btn-outline-secondary btn-sm">
+                    &laquo; Назад к посту
+                </a>
+            </div>
+
+            <div class="card shadow-sm">
+                <!-- Заголовок карточки -->
+                <div class="card-header bg-primary text-white p-3">
+                    <h3 class="mb-0">Редактировать пост</h3>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <!-- Формадагы общие ошибкаларды көрсөтүү -->
+                    {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            <strong>Ошибка!</strong> Пожалуйста, проверьте правильность заполнения полей.
+                            {% if form.non_field_errors %}
+                                <ul class="mb-0 mt-2">
+                                    {% for error in form.non_field_errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Редактирование формасы -->
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Заголовок (Title) -->
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">Заголовок поста:</label>
+                            <input type="text" 
+                                   name="{{ form.title.name }}" 
+                                   id="{{ form.title.id_for_label }}" 
+                                   class="form-control {% if form.title.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.title.value|default:post.title }}" 
+                                   placeholder="Введите заголовок"
+                                   required>
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.title.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Автор (Имя) -->
+                        {% if form.name %}
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">Имя автора:</label>
+                            <input type="text" 
+                                   name="{{ form.name.name }}" 
+                                   id="{{ form.name.id_for_label }}" 
+                                   class="form-control {% if form.name.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.name.value|default:post.name }}" 
+                                   placeholder="Введите ваше имя"
+                                   required>
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.name.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Категория -->
+                        {% if form.category %}
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label fw-bold">Категория:</label>
+                            <select name="{{ form.category.name }}" 
+                                    id="{{ form.category.id_for_label }}" 
+                                    class="form-select {% if form.category.errors %}is-invalid{% endif %}">
+                                {% for choice_val, choice_label in form.category.field.choices %}
+                                    <option value="{{ choice_val }}" 
+                                            {% if form.category.value == choice_val or post.category.id == choice_val %}selected{% endif %}>
+                                        {{ choice_label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.category.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.category.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Главное изображение -->
+                        {% if form.image %}
+                        <div class="mb-3">
+                            <label for="{{ form.image.id_for_label }}" class="form-label fw-bold">Изображение:</label>
+                            
+                            <!-- Текущее изображение -->
+                            {% if post.image %}
+                                <div class="mb-2">
+                                    <small class="text-muted d-block mb-1">Текущее изображение:</small>
+                                    <img src="{{ post.image.url }}" class="img-thumbnail" style="max-height: 150px; object-fit: cover;">
+                                </div>
+                            {% endif %}
+
+                            <input type="file" 
+                                   name="{{ form.image.name }}" 
+                                   id="{{ form.image.id_for_label }}" 
+                                   class="form-control {% if form.image.errors %}is-invalid{% endif %}">
+                            {% if form.image.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.image.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Полный текст поста (Text) -->
+                        <div class="mb-4">
+                            <label for="{{ form.text.id_for_label }}" class="form-label fw-bold">Текст поста:</label>
+                            <textarea name="{{ form.text.name }}" 
+                                      id="{{ form.text.id_for_label }}" 
+                                      class="form-control {% if form.text.errors %}is-invalid{% endif %}" 
+                                      rows="8" 
+                                      placeholder="Напишите текст поста..."
+                                      required>{{ form.text.value|default:post.text }}</textarea>
+                            {% if form.text.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.text.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Теги -->
+                        {% if form.tags %}
+                        <div class="mb-4">
+                            <label for="{{ form.tags.id_for_label }}" class="form-label fw-bold">Теги:</label>
+                            {{ form.tags }}
+                            {% if form.tags.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.tags.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Кнопки действия -->
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <a href="{% url 'post_detail' post.id %}" class="btn btn-outline-secondary">
+                                Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary fw-bold">
+                                Сохранить изменения
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -6,7 +6,7 @@ BANNED_WORDS = ("war", "BEGIN",)
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ("title", "text", "image", "category")
+        fields = ("title", "text", "image", "category", "tags")
 
     def clean_title(self):
         title = self.cleaned_data["title"]
@@ -15,7 +15,7 @@ class PostForm(forms.ModelForm):
             raise forms.ValidationError("Title has banned word!")
 
         return title
-
+   
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment

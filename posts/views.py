@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.http.request import HttpRequest  
 from django.contrib.auth.decorators import login_required
 from posts.models import Post,Tag, Category
@@ -23,7 +23,7 @@ def say_name(r, name):
 def post_list(request: HttpRequest):#r-request
     #posts = Post.objects.all() #bardyk posttordu chygarat
     qp = request.GET
-    posts = Post.objects.filter(is_published=True)
+    posts = Post.objects.filter()#is_published=True shows only published posts
 
     if search := qp.get("search"):
         title = Q(title__icontains=search)#icontains — чоң же кичине тамгасына карабай издөө
@@ -36,11 +36,12 @@ def post_list(request: HttpRequest):#r-request
 
 
 
-def post_detail(r, pk):
+def post_detail(request: HttpRequest, pk: int) :
     post = get_object_or_404(Post, id=pk)#post = Post.objects.get() bul jakta http 500 kaitarat
-    post.views += 1
+    if request.user.is_authenticated:
+        post.views += 1
     post.save()
-    return render(r, "posts/post_detail.html", {"post": post})
+    return render(request, "posts/post_detail.html", {"post": post})
 
 
 @login_required
@@ -76,6 +77,9 @@ def post_comment(request: HttpRequest, pk: int) -> HttpResponse:
 def delete_post(request: HttpRequest, pk:int) -> HttpResponse:
     post = get_object_or_404(Post, pk=pk)
 
+    if request.user != post.user:
+        return HttpResponseForbidden("Not Enough Permissions")
+
     if request.method.lower() == "post":
         post.delete()
         print("Post deleted!")
@@ -84,3 +88,18 @@ def delete_post(request: HttpRequest, pk:int) -> HttpResponse:
 
     return render(request, "posts/post_delete.html", context={"post": post})
 
+def edit_post(request: HttpRequest, pk) -> HttpResponse:
+    post = get_object_or_404(Post, pk=pk)
+    if post.user != request.user:
+        return HttpResponseForbidden("Not Enough Permissions")
+    form = PostForm(instance=post)
+
+    if request.method.lower() == "post":
+        form = PostForm(request.POST, request.FILES, instance=post)
+
+        if form.is_valid():
+            form.save()
+            
+            return redirect("post_detail", pk=post.pk)
+
+    return render(request, "posts/edit_post.html", context={"form": form, "post": post})
