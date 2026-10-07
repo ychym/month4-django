@@ -27,7 +27,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["-created_at"]# jany posttordu 1-chygarat
 
 class Comment(models.Model):
     author_name = models.CharField(max_length=100)

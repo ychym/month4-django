@@ -59,7 +59,6 @@ def create_post(request: HttpRequest) -> HttpResponse:#type hinting
     return render(request, "posts/create_post.html", {"form": form, "tags": tags, "categories": categories})
 
 
-
 def post_comment(request: HttpRequest, pk: int) -> HttpResponse:
     if request.method.lower() == "post":
         post = get_object_or_404(Post, pk=pk)
@@ -103,3 +102,11 @@ def edit_post(request: HttpRequest, pk) -> HttpResponse:
             return redirect("post_detail", pk=post.pk)
 
     return render(request, "posts/edit_post.html", context={"form": form, "post": post})
+
+@login_required
+def my_posts(request: HttpRequest) -> HttpResponse:
+
+    posts = Post.objects.filter(user = request.user)
+
+    return render(request, "posts/my_posts.html", {"posts": posts})
+        

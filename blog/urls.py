@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from django.conf.urls.static import static
-from posts.views import hello_world, my_name, say_name, post_list, post_detail, create_post, post_comment, delete_post, edit_post
+from posts.views import hello_world, my_name, say_name, post_list, post_detail, create_post, post_comment, delete_post, edit_post, my_posts
 from django.conf import settings
 from user.views import register
 
@@ -34,6 +34,7 @@ urlpatterns = [
     path("post/<int:pk>/edit/",edit_post, name="edit_post"),
     path("accounts/register", register, name="register"),
     path("accounts/", include("django.contrib.auth.urls")),
+    path("post/myposts", my_posts, name="my_posts"),
     
 ]
 

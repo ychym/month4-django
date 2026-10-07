@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    
+    <!-- Шапка страницы: заголовок и кнопка создания -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold mb-1">Мои публикации</h2>
+            <p class="text-muted small mb-0">Всего публикаций: {{ posts.count|default:0 }}</p>
+        </div>
+        <a href="{% url 'create_post' %}" class="btn btn-success">
+            + Создать пост
+        </a>
+    </div>
+
+    <!-- Список постов пользователя -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for post in posts %}
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 position-relative">
+                
+                <!-- Изображение поста -->
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                    <img src="{% static 'default.png' %}" class="card-img-top" alt="default.png" style="height: 200px; object-fit: cover;">
+                {% endif %}
+
+                <div class="card-body d-flex flex-column">
+                    
+                    <!-- Категория и просмотры -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        {% if post.category %}
+                            <span class="badge bg-primary">
+                                {{ post.category.name }}
+                            </span>
+                        {% else %}
+                            <div></div>
+                        {% endif %}
+
+                        <!-- Просмотры -->
+                        <span class="badge bg-light text-dark border" title="Количество просмотров">
+                            🔥 {{ post.views|default:0 }}
+                        </span>
+                    </div>
+
+                    <!-- Заголовок -->
+                    <h5 class="card-title fw-bold text-truncate">{{ post.title }}</h5>
+
+                    <!-- Текст поста -->
+                    <p class="card-text text-muted flex-grow-1">
+                        {{ post.text|truncatewords:15 }}
+                    </p>
+
+                    <!-- Дата публикации -->
+                    <div class="mb-3">
+                        <small class="text-muted">Дата: {{ post.created_at|date:"d.m.Y H:i" }}</small>
+                    </div>
+
+                    <!-- Панель управления (Кнопки действий) -->
+                    <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center gap-2">
+                        <a href="{% url 'post_detail' post.id %}" class="btn btn-outline-primary btn-sm">
+                            Просмотр
+                        </a>
+
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'edit_post' post.id %}" class="btn btn-outline-warning" title="Редактировать">
+                                ✏️
+                            </a>
+                            <a href="{% url 'delete_post' post.id %}" class="btn btn-outline-danger" title="Удалить">
+                                🗑️
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <!-- Если у пользователя пока нет постов -->
+        <div class="col-12">
+            <div class="card text-center p-5 shadow-sm border-0">
+                <div class="card-body">
+                    <h4 class="text-muted mb-3">У вас пока нет опубликованных постов</h4>
+                    <p class="text-muted mb-4">Делитесь своими мыслями и идеями с другими прямо сейчас!</p>
+                    <a href="{% url 'create_post' %}" class="btn btn-primary btn-lg">
+                        Написать первый пост
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
