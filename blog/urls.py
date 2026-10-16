@@ -17,24 +17,33 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from django.conf.urls.static import static
-from posts.views import hello_world, my_name, say_name, post_list, post_detail, create_post, post_comment, delete_post, edit_post, my_posts
+from posts.views import (
+        HelloWorldView, 
+        MyName,
+        PostListView,
+        PostDetailView,
+        CreatePostView, 
+        PostCommentView, 
+        DeletePostView, 
+        EditPostView, 
+        MyPostsView,
+    )
 from django.conf import settings
 from user.views import register
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("hello/", hello_world),
-    path("name/", my_name),
-    path("name/<str:name>", say_name),
-    path("", post_list, name="post_list"),
-    path("post/<int:pk>/", post_detail, name="post_detail"),
-    path("post/create/", create_post, name="create_post"),
-    path("post/<int:pk>/comment/", post_comment, name="post_comment"),
-    path("post/<int:pk>/delete", delete_post, name="delete_post"),
-    path("post/<int:pk>/edit/",edit_post, name="edit_post"),
+    path("hello/", HelloWorldView.as_view()),
+    path("name/", MyName.as_view()),
+    path("", PostListView.as_view(), name="post_list"),
+    path("post/<int:pk>/", PostDetailView.as_view(), name="post_detail"),
+    path("post/create/", CreatePostView.as_view(), name="create_post"),
+    path("post/<int:pk>/comment/", PostCommentView.as_view, name="post_comment"),
+    path("post/<int:pk>/delete", DeletePostView.as_view(), name="delete_post"),
+    path("post/<int:pk>/edit/", EditPostView.as_view(), name="edit_post"),
     path("accounts/register", register, name="register"),
     path("accounts/", include("django.contrib.auth.urls")),
-    path("post/myposts", my_posts, name="my_posts"),
+    path("post/myposts", MyPostsView.as_view(), name="my_posts"),
     
 ]
 

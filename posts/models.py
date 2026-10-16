@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 import datetime
 # Create your models here.
 
@@ -28,6 +29,11 @@ class Post(models.Model):
 
     class Meta:
         ordering = ["-created_at"]# jany posttordu 1-chygarat
+
+    def get_absolute_url(self):
+        url = reverse("post_detail", kwargs={"pk": self.pk})
+        print(url)
+        return url
 
 class Comment(models.Model):
     author_name = models.CharField(max_length=100)

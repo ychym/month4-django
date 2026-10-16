@@ -1,112 +1,116 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http.response import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
-from django.http.request import HttpRequest  
+from django.http.request import HttpRequest
+from django.views.generic import (
+    ListView, 
+    View, 
+    DetailView, 
+    CreateView, 
+    DeleteView, 
+    UpdateView, 
+    GenericViewError,
+
+)
+from django.urls import reverse_lazy, reverse
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from posts.models import Post,Tag, Category
+from posts.models import Post,Tag, Category, Comment
 from posts.forms import PostForm, CommentForm
 from django.db.models import Q
 # Create your views here.
 
-def hello_world(r):
-    return HttpResponse("<h1>Hello world!</h1>")
-
-def my_name(r):
-    name = "Yrysgul"
-
-    return HttpResponse(f"<h2>Hello,</h2><h1>{name}</h1>")
-
-def say_name(r, name):
-    return HttpResponse(f"<h2>Hello,</h2><h1>{name}</h1>")
+class HelloWorldView(View):
+    def get(self, r):
+        return HttpResponse("<h1>Hello world!</h1>")
 
 
-
-def post_list(request: HttpRequest):#r-request
-    #posts = Post.objects.all() #bardyk posttordu chygarat
-    qp = request.GET
-    posts = Post.objects.filter()#is_published=True shows only published posts
-
-    if search := qp.get("search"):
-        title = Q(title__icontains=search)#icontains — чоң же кичине тамгасына карабай издөө
-        text = Q(text__icontains=search)
-        posts = posts.filter(title | text)
-
-    posts = posts[0:5] #pagination
+class MyName(View):
     
-    return render(request, "posts/list_posts.html", {"posts":posts})
+    def get(self, r):
+        name = "Yrysgul"
+        return HttpResponse(f"<h2>Hello,</h2><h1>{name}</h1>")
 
 
+class PostListView(ListView):
+    model = Post
+    template_name = "posts/list_posts.html"
+    context_object_name = "posts"
 
-def post_detail(request: HttpRequest, pk: int) :
-    post = get_object_or_404(Post, id=pk)#post = Post.objects.get() bul jakta http 500 kaitarat
-    if request.user.is_authenticated:
-        post.views += 1
-    post.save()
-    return render(request, "posts/post_detail.html", {"post": post})
+    
+class PostDetailView(DetailView):
+    model = Post
+    template_name = "posts/post_detail.html"
 
+    def get_object(self, queryset = None):
+        object = super().get_object(queryset)
+        object.views += 1
+        object.save()
+        return object
 
-@login_required
-def create_post(request: HttpRequest) -> HttpResponse:#type hinting
-    form = PostForm()
-    if request.method.lower() == "post":
-     print(request.POST)
-     form = PostForm(request.POST, request.FILES)
-     if form.is_valid():
-            form.instance.user = request.user# b.a. form.instance.user=Post.user
-            form.save()
-            return redirect("post_detail", pk=form.instance.pk)
-    tags = Tag.objects.all()
-    categories = Category.objects.all()
-    return render(request, "posts/create_post.html", {"form": form, "tags": tags, "categories": categories})
+class CreatePostView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = "posts/create_post.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tags"] = Tag.objects.all()
+        context["categories"] = Category.objects.all()
 
-def post_comment(request: HttpRequest, pk: int) -> HttpResponse:
-    if request.method.lower() == "post":
-        post = get_object_or_404(Post, pk=pk)
-        form = CommentForm(request.POST)
+        return context
 
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.save()
-            return redirect("post_detail", pk=pk)
-    return render(request, "post_detail.html", {"post":post})
+    def get_form(self, form_class = None):
+        form = super().get_form(form_class)
+        form.instance.user = self.request.user
 
+        return form    
 
+class DeletePostView(DeleteView):
+    model = Post
+    template_name = "posts/post_delete.html"
+    success_url = reverse_lazy("post_list")
 
-def delete_post(request: HttpRequest, pk:int) -> HttpResponse:
-    post = get_object_or_404(Post, pk=pk)
+    def get_object(self, queryset = None):
+        object =  super().get_object(queryset)
+        if object.user != self.request.user:
+            raise GenericViewError()
+        return object
 
-    if request.user != post.user:
-        return HttpResponseForbidden("Not Enough Permissions")
+class EditPostView(UpdateView):
+    model = Post
+    template_name = "posts/edit_post.html"
+    form_class = PostForm    
 
-    if request.method.lower() == "post":
-        post.delete()
-        print("Post deleted!")
-        return redirect("post_list")
-        
+    def get_object(self, queryset = None):
+        object = super().get_object(queryset)
 
-    return render(request, "posts/post_delete.html", context={"post": post})
+        if object.user != self.request.user:
+            raise GenericViewError()
+        return object
 
-def edit_post(request: HttpRequest, pk) -> HttpResponse:
-    post = get_object_or_404(Post, pk=pk)
-    if post.user != request.user:
-        return HttpResponseForbidden("Not Enough Permissions")
-    form = PostForm(instance=post)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tags"] = Tag.objects.all()
+        context["categories"] = Category.objects.all()
+        return context
 
-    if request.method.lower() == "post":
-        form = PostForm(request.POST, request.FILES, instance=post)
+class PostCommentView(CreateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = "post_detail.html"
 
-        if form.is_valid():
-            form.save()
-            
-            return redirect("post_detail", pk=post.pk)
+    def form_valid(self, form):
+        form.instance.post_id = self.kwargs["pk"]  # Базадан Post издөөнүн кереги жок, түз эле ID беребиз!
+        return super().form_valid(form)
 
-    return render(request, "posts/edit_post.html", context={"form": form, "post": post})
+    def get_success_url(self):
+        return reverse("post_detail", kwargs={"pk": self.kwargs["pk"]})
+      
+class MyPostsView(LoginRequiredMixin, ListView):
+    model = Post
+    template_name = "posts/my_posts.html"
+    context_object_name = "posts"
 
-@login_required
-def my_posts(request: HttpRequest) -> HttpResponse:
-
-    posts = Post.objects.filter(user = request.user)
-
-    return render(request, "posts/my_posts.html", {"posts": posts})
-        
+    def get_queryset(self):
+        return Post.objects.filter(user = self.request.user)
+         
